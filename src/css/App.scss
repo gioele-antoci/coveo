@@ -1,0 +1,34 @@
+.App {
+    text-align: center;
+    background-color: whitesmoke;
+    padding: 0 2em;
+    width: 100%;
+    height: 100%;
+}
+
+.header,
+.page-container,
+.navigator-container{
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.page-container{
+    top: 5em;
+    bottom: 3em;
+}
+.header {
+  top: 0em;
+  height: 5em;
+
+  & .header-label{
+      margin-top: 1em;
+      font-size: 2em;
+  }
+}
+
+.navigator-container{
+    bottom: 0;
+    height: 3em;
+}

@@ -10,8 +10,9 @@ import TastesType from './TastesType';
 import Results from './Results';
 import Navigator from './Navigator';
 
+import queryHelper from './queryHelper';
+
 import './css/App.css';
-import { QueryBuilder, SearchEndpoint } from 'coveo-search-ui';
 import { page, tasteObservations, drinkType, foodDrinkPriority } from './interfaces';
 
 class App extends React.Component<null,
@@ -19,51 +20,74 @@ class App extends React.Component<null,
     activePage: page,
     foodDrinkPreference?: foodDrinkPriority,
     drinkPreference?: drinkType,
+    foodPreference?: string,
     tastePreference?: tasteObservations
   }> {
 
-  private queryBuilder: QueryBuilder;
-  private endpoint: SearchEndpoint;
+
 
   constructor(props) {
     super(props);
     this.state = { activePage: page.home };
-    this.queryBuilder = new QueryBuilder();
-    this.endpoint = new SearchEndpoint({ accessToken: "058c85fd-3c79-42a3-9236-b83d35588103", restUri: "https://cloudplatform.coveo.com/rest/search" });
-    SearchEndpoint.endpoints["default"] = this.endpoint;
-
-    this.endpoint.search({ q: "vin" });
+    queryHelper.setup();
   }
+
 
   private goNext() {
-    if (this.state.activePage !== page.results) {
-      this.setState({ activePage: page[page[this.state.activePage + 1]] });
+    let nextPage = page.results;
+
+    switch (this.state.activePage) {
+      case page.foodType:
+      case page.drinkType:
+        nextPage = page.tastesType;
+        break;
+
+      case page.tastesType:
+        page.results;
+        break;
     }
+
+    this.goToPage(nextPage);
   }
 
-  private goPrevious() {
-    if (this.state.activePage !== page.home) {
-      this.setState({ activePage: page[page[this.state.activePage - 1]] });
-    }
+  private goToPage(page: page) {
+    this.setState({ activePage: page });
   }
 
   private reset() {
     this.setState({ activePage: page.foodVsdrink });
+    queryHelper.setup();
   }
 
-  private getPageComponent() {
-    switch (this.state.activePage) {
+  onDrinkTypeChoice(choice: drinkType) {
+    this.setState({ drinkPreference: choice });
+    this.goToPage(page.tastesType);
+  }
+
+  onFoodTypeChoice(choice: string) {
+    this.setState({ foodPreference: choice });
+    this.goToPage(page.tastesType);
+  }
+
+  onFoodVsDrinkChoice(choice: foodDrinkPriority) {
+    this.setState({ foodDrinkPreference: choice });
+    const nextPage = choice === foodDrinkPriority.drink ? page.drinkType : page.foodType;
+    this.goToPage(nextPage);
+  }
+
+  private getPageComponent(activePage: page) {
+    switch (activePage) {
       case page.home:
-        return (<Home />);
+        return (<Home onStart={() => this.goToPage(page.foodVsdrink)} />);
 
       case page.foodVsdrink:
-        return (<FoodVsDrink active={this.state.foodDrinkPreference} onChoice={(choice) => this.setState({ foodDrinkPreference: choice })} />);
+        return (<FoodVsDrink active={this.state.foodDrinkPreference} onChoice={(choice) => this.onFoodVsDrinkChoice(choice)} />);
 
       case page.drinkType:
-        return (<DrinkType />);
+        return (<DrinkType active={this.state.drinkPreference} onChoice={(choice) => this.onDrinkTypeChoice(choice)} />);
 
       case page.foodType:
-        return (<FoodType />);
+        return (<FoodType active={this.state.foodPreference} onChoice={(choice) => this.onFoodTypeChoice(choice)} />);
 
       case page.tastesType:
         return (<TastesType />);
@@ -73,25 +97,45 @@ class App extends React.Component<null,
     }
   }
 
-  private getNavigator() {
-    const prevEnabled = this.state.activePage !== page.home;
-    const nextEnabled = this.state.activePage !== page.results;
+  private getNavigator(activePage: page) {
+    const skipEnabled =
+      activePage !== page.results &&
+      activePage !== page.foodVsdrink &&
+      activePage !== page.home;
 
-    return (<Navigator previous={prevEnabled} next={nextEnabled} onPrevious={() => this.goPrevious()} onNext={() => this.goNext()} onReset={() => this.reset()} />)
+    const resetEnabled = activePage !== page.home;
+    return (<Navigator skip={skipEnabled} reset={resetEnabled} onSkip={() => this.goNext()} onReset={() => this.reset()} />)
   }
 
-  private getHeaderLabel(): string {
-    return page[this.state.activePage];
+  private getHeaderLabel(activePage: page): string {
+    switch (activePage) {
+      case page.drinkType:
+        return "What kind of drink do you feel like drinking?";
+
+      case page.foodType:
+        return "What kind of food do you feel like eating?";
+
+      case page.foodVsdrink:
+        return "Are you more of a food or drink person?";
+
+      case page.home:
+        return "Drin-Que?";
+
+      case page.tastesType:
+        return "Tell me more about your drink taste";
+
+      case page.results:
+        return "My suggestions";
+    }
   }
 
 
   render() {
     return (
       <div className="App">
-        <div className="header">{this.getHeaderLabel()}</div>
-        <div className="page-container">{this.getPageComponent()}</div>
-        <div className="navigator-container">{this.getNavigator()}</div>
-
+        <div className="header"><div className="header-label">{this.getHeaderLabel(this.state.activePage)}</div></div>
+        <div className="page-container">{this.getPageComponent(this.state.activePage)}</div>
+        <div className="navigator-container">{this.getNavigator(this.state.activePage)}</div>
       </div>
     );
   }

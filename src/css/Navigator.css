@@ -1,0 +1,8 @@
+.Navigator {
+  position: fixed;
+  bottom: 1em;
+  left: 50%;
+  transform: translate(-50%); }
+
+.Navigator a {
+  margin: 0 1em; }

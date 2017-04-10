@@ -1,0 +1,27 @@
+.DrinkType{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.drinks-container {
+ flex:1;
+
+    & .drink-choice{
+    display: inline-block;
+    margin: 1em;
+    padding: 1em;    
+    cursor: pointer;
+    transition: background .6s ease-out;
+    width: 15em;
+
+    &:hover{
+        background: lightyellow;
+    }
+    
+        & .drink-img{
+        height:10em;
+        }
+    }
+}

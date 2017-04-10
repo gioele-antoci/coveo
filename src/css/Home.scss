@@ -1,0 +1,12 @@
+.Home {
+    text-align: center;
+    height: 100%;
+
+ & .start-button {
+    transform: translate(-50%,-50%);
+    top: 50%;
+    display: block;
+    left: 50%;
+    position: absolute;
+}
+}

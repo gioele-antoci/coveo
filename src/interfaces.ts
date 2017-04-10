@@ -15,7 +15,11 @@ export enum foodDrinkPriority {
 export enum drinkType {
     wine,
     beer,
-    others
+    whiskey,
+    rhum,
+    grappa,
+    cidre,
+    liqueur
 }
 
 export interface tasteObservations {
